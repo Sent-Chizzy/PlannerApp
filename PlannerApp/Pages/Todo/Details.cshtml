@@ -1,0 +1,20 @@
+﻿@page "{id:int}"
+@model TodoApp.Pages.Todo.DetailsModel
+
+@{
+    ViewData["Title"] = "To-Do Details";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <!-- Display the Title of the to-do item -->
+    <h4>@Model.TodoItem.Title</h4>
+    <!-- Show whether it’s completed -->
+    <p>
+        <strong>Completed?</strong> @(Model.TodoItem.IsDone ? "Yes" : "No")
+    </p>
+</div>
+
+<!-- Button to go back to the list -->
+<a asp-page="Index" class="btn btn-secondary">Back to List</a>
