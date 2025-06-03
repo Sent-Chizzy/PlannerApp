@@ -1,0 +1,40 @@
+﻿@page "{id:int}"
+@model TodoApp.Pages.Todo.EditModel
+
+@{
+    ViewData["Title"] = "Edit To-Do Item";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- The form method="post" posts back to /Todo/Edit?id=<id> -->
+<form method="post">
+    <!-- Hidden input for Id so that OnPostAsync knows which record to update -->
+    <input type="hidden" asp-for="TodoItem.Id" />
+
+    <div class="mb-3">
+        <!-- Label for the Title field -->
+        <label asp-for="TodoItem.Title" class="form-label"></label>
+        <!-- Text input pre-populated with existing Title -->
+        <input asp-for="TodoItem.Title" class="form-control" />
+        <!-- Validation message for Title -->
+        <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <!-- Checkbox pre-checked if IsDone was true -->
+        <input asp-for="TodoItem.IsDone" class="form-check-input" />
+        <!-- Label for the IsDone checkbox -->
+        <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
+    </div>
+
+    <!-- Submit button to save changes -->
+    <button type="submit" class="btn btn-primary">Save</button>
+    <!-- Link to go back to the list without saving -->
+    <a asp-page="Index" class="btn btn-secondary ms-2">Back to List</a>
+</form>
+
+@section Scripts {
+    <!-- Enables client-side validation -->
+    <partial name="_ValidationScriptsPartial" />
+}

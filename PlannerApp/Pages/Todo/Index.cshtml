@@ -1,0 +1,47 @@
+﻿@page
+@model TodoApp.Pages.Todo.IndexModel
+
+@{
+    ViewData["Title"] = "To-Do List";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <!-- Link to the Create page so users can add a new to-do -->
+    <a class="btn btn-primary" asp-page="Create">Add New To-Do</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Completed?</th>
+            <th></th> <!-- For Action buttons (Edit/Delete) -->
+        </tr>
+    </thead>
+    <tbody>
+        @* Loop through each TodoItem in the PageModel's TodoItems list *@
+        @foreach (var item in Model.TodoItems)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>
+                    @* Display "Yes" if IsDone is true, otherwise "No" *@
+                    @(item.IsDone ? "Yes" : "No")
+                </td>
+                <td>
+                    @* Link to edit this item; pass the Id as a route value *@
+                    <a class="btn btn-sm btn-secondary" asp-page="Edit" asp-route-id="@item.Id">
+                        Edit
+                    </a>
+                    &nbsp; <!-- small space between buttons -->
+                    @* Link to delete this item; pass the Id as a route value *@
+                    <a class="btn btn-sm btn-danger" asp-page="Delete" asp-route-id="@item.Id">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,35 @@
+﻿@page
+@model TodoApp.Pages.Todo.CreateModel
+
+@{
+    ViewData["Title"] = "Create To-Do Item";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- Form method="post" posts back to this same page -->
+<form method="post">
+    <div class="mb-3">
+        <!-- Label for the Title property -->
+        <label asp-for="TodoItem.Title" class="form-label"></label>
+        <!-- Input for the Title property -->
+        <input asp-for="TodoItem.Title" class="form-control" />
+        <!-- Validation message for Title -->
+        <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <!-- Checkbox for the IsDone property -->
+        <input asp-for="TodoItem.IsDone" class="form-check-input" />
+        <!-- Label for the IsDone checkbox -->
+        <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
+    </div>
+    <!-- Submit button to create the new to-do -->
+    <button type="submit" class="btn btn-primary">Create</button>
+    <!-- Link to go back to the list without creating -->
+    <a asp-page="Index" class="btn btn-secondary ms-2">Back to List</a>
+</form>
+
+@section Scripts {
+    <!-- Enables client-side validation scripts -->
+    <partial name="_ValidationScriptsPartial" />
+}
