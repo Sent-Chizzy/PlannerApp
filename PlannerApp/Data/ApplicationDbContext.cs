@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore; // EF Core namespace
-using PlannerApp.Models;                // Our models namespace
+using PlannerApp.Models;             // Our models namespace
 
-namespace TodoApp.Data
+namespace PlannerApp.Data           // ← Change namespace from TodoApp.Data to PlannerApp.Data
 {
     // ApplicationDbContext is the EF Core "gateway" to our database
     public class ApplicationDbContext : DbContext

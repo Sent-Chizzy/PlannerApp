@@ -1,14 +1,15 @@
 ﻿@page
-@model TodoApp.Pages.Todo.IndexModel
+@model PlannerApp.Pages.Todo.IndexModel
 
 @{
+    // Page title
     ViewData["Title"] = "To-Do List";
 }
 
 <h1>@ViewData["Title"]</h1>
 
 <p>
-    <!-- Link to the Create page so users can add a new to-do -->
+    <!-- Button to navigate to Create page -->
     <a class="btn btn-primary" asp-page="Create">Add New To-Do</a>
 </p>
 
@@ -16,30 +17,97 @@
     <thead>
         <tr>
             <th>Title</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Difficulty</th>
+            <th>Progress</th>
             <th>Completed?</th>
-            <th></th> <!-- For Action buttons (Edit/Delete) -->
+            <th></th> <!-- Edit/Delete/Complete column -->
         </tr>
     </thead>
     <tbody>
-        @* Loop through each TodoItem in the PageModel's TodoItems list *@
+        @* Loop through each TodoItem loaded by the PageModel *@
         @foreach (var item in Model.TodoItems)
         {
             <tr>
+                <!-- Title -->
                 <td>@item.Title</td>
+
+                <!-- Description -->
+                <td>@item.Description</td>
+
+                <!-- Due Date: show formatted or “—” if null -->
                 <td>
-                    @* Display "Yes" if IsDone is true, otherwise "No" *@
-                    @(item.IsDone ? "Yes" : "No")
+                    @(
+                        item.DueDate.HasValue
+                        ? item.DueDate.Value.ToString("yyyy-MM-dd")
+                        : "—"
+                        )
                 </td>
+
+                <!-- Difficulty: show enum name (Easy, Moderate, Hard) -->
+                <td>@item.DifficultyLevel.ToString()</td>
+
+                <!-- Progress: 10‐segment bar -->
                 <td>
-                    @* Link to edit this item; pass the Id as a route value *@
-                    <a class="btn btn-sm btn-secondary" asp-page="Edit" asp-route-id="@item.Id">
+                    <div class="d-flex" style="gap: 2px;">
+                        @for (int seg = 1; seg <= 10; seg++)
+                        {
+                            bool filled = (item.Progress >= seg * 10) || item.IsDone;
+                            <div class="flex-fill"
+                                 style="
+                                    height: 20px;
+                                    background-color: @(filled ? "#198754" : "#e9ecef");
+                                    border: 1px solid #dee2e6;
+                                    border-radius: 2px;
+                                        ">
+                            </div>
+                        }
+                    </div>
+                    <div class="small text-center mt-1">
+                        @item.Progress%
+                    </div>
+                </td>
+
+                <!-- Completed? => Yes if IsDone is true or Progress >= 100 -->
+                <td>
+                    @(
+                        (item.IsDone || item.Progress >= 100)
+                        ? "Yes"
+                        : "No"
+                        )
+                </td>
+
+                <td>
+                    <!-- EDIT button (always present) -->
+                    <a class="btn btn-sm btn-secondary"
+                       asp-page="Edit"
+                       asp-route-id="@item.Id">
                         Edit
                     </a>
-                    &nbsp; <!-- small space between buttons -->
-                    @* Link to delete this item; pass the Id as a route value *@
-                    <a class="btn btn-sm btn-danger" asp-page="Delete" asp-route-id="@item.Id">
+                    &nbsp;
+
+                    <!-- DELETE button (always present) -->
+                    <a class="btn btn-sm btn-danger"
+                       asp-page="Delete"
+                       asp-route-id="@item.Id">
                         Delete
                     </a>
+                    &nbsp;
+
+                    @* COMPLETE button: only show if not yet completed *@
+                    @if (!(item.IsDone || item.Progress >= 100))
+                    {
+                        <form method="post"
+                              asp-page-handler="Complete"
+                              asp-route-id="@item.Id"
+                              style="display:inline;"
+                              onsubmit="return confirm('Mark this task as complete (100%)?');">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Complete
+                            </button>
+                        </form>
+                    }
                 </td>
             </tr>
         }

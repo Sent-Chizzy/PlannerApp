@@ -2,7 +2,7 @@ using System.Threading.Tasks;                  // For Task and async/await
 using Microsoft.AspNetCore.Mvc;                // For IActionResult, [BindProperty], NotFound(), RedirectToPage
 using Microsoft.AspNetCore.Mvc.RazorPages;     // Base class for Razor PageModels
 using PlannerApp.Models;                       // Namespace for TodoItem
-using TodoApp.Data;                            // Namespace for ApplicationDbContext                      
+using PlannerApp.Data;                            // Namespace for ApplicationDbContext                      
 
 namespace TodoApp.Pages.Todo
 {

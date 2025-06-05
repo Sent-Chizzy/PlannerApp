@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;   // ? EF Core extension methods
-using TodoApp.Data;                    // ? Your ApplicationDbContext namespace
+using PlannerApp.Data;                    // ? Your ApplicationDbContext namespace
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,40 +1,168 @@
 ﻿@page "{id:int}"
-@model TodoApp.Pages.Todo.EditModel
+@model PlannerApp.Pages.Todo.EditModel
 
 @{
+    // Page title
     ViewData["Title"] = "Edit To-Do Item";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1 class="text-center">@ViewData["Title"]</h1>
 
-<!-- The form method="post" posts back to /Todo/Edit?id=<id> -->
-<form method="post">
-    <!-- Hidden input for Id so that OnPostAsync knows which record to update -->
-    <input type="hidden" asp-for="TodoItem.Id" />
+<div class="row">
+    <div class="col-12 col-md-6 mx-auto">
+        <!-- Form POSTS to /Todo/Edit?id=<id> -->
+        <form method="post" id="editForm">
+            <!-- Hidden field to make sure the Id is bound -->
+            <input type="hidden" asp-for="TodoItem.Id" />
 
-    <div class="mb-3">
-        <!-- Label for the Title field -->
-        <label asp-for="TodoItem.Title" class="form-label"></label>
-        <!-- Text input pre-populated with existing Title -->
-        <input asp-for="TodoItem.Title" class="form-control" />
-        <!-- Validation message for Title -->
-        <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+            <!-- 1) Title Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.Title" class="form-label"></label>
+                <input asp-for="TodoItem.Title" class="form-control" />
+                <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+            </div>
+
+            <!-- 2) Description Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.Description" class="form-label"></label>
+                <textarea asp-for="TodoItem.Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="TodoItem.Description" class="text-danger"></span>
+            </div>
+
+            <!-- 3) Due Date Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.DueDate" class="form-label"></label>
+                <input asp-for="TodoItem.DueDate" class="form-control" type="date" />
+                <span asp-validation-for="TodoItem.DueDate" class="text-danger"></span>
+            </div>
+
+            <!-- 4) Difficulty Slider -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.DifficultyLevel" class="form-label"></label>
+                <div class="d-flex align-items-center">
+                    <input asp-for="TodoItem.DifficultyLevel"
+                           class="form-range me-3"
+                           type="range"
+                           min="1" max="3" step="1"
+                           id="difficultySliderEdit" />
+                    <span id="difficultyLabelEdit" class="fw-bold">
+                        @Model.TodoItem?.DifficultyLevel.ToString() ?? "Moderate"
+                    </span>
+                </div>
+                <span asp-validation-for="TodoItem.DifficultyLevel" class="text-danger"></span>
+            </div>
+
+            <!-- 5) Progress Slider: 0–100 in steps of 10 -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.Progress" class="form-label"></label>
+                <div class="d-flex align-items-center">
+                    <input asp-for="TodoItem.Progress"
+                           class="form-range me-3"
+                           type="range"
+                           min="0" max="100" step="10"
+                           id="progressSliderEdit" />
+                    <span id="progressLabelEdit" class="fw-bold">
+                        @Model.TodoItem?.Progress.ToString() ?? "0"%
+                    </span>
+                </div>
+                <span asp-validation-for="TodoItem.Progress" class="text-danger"></span>
+            </div>
+
+            <!-- 6) Completed Checkbox -->
+            <div class="form-check mb-3">
+                <input asp-for="TodoItem.IsDone" class="form-check-input" id="isDoneCheckboxEdit" />
+                <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
+            </div>
+
+            <!-- 7) Buttons: Save + Back to List -->
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary me-2">Save</button>
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-check mb-3">
-        <!-- Checkbox pre-checked if IsDone was true -->
-        <input asp-for="TodoItem.IsDone" class="form-check-input" />
-        <!-- Label for the IsDone checkbox -->
-        <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
-    </div>
-
-    <!-- Submit button to save changes -->
-    <button type="submit" class="btn btn-primary">Save</button>
-    <!-- Link to go back to the list without saving -->
-    <a asp-page="Index" class="btn btn-secondary ms-2">Back to List</a>
-</form>
+</div>
 
 @section Scripts {
-    <!-- Enables client-side validation -->
+    <!-- Client-side validation -->
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ==== Difficulty Slider Logic (Edit) ====
+            var diffSlider = document.getElementById("difficultySliderEdit");
+            var diffLabel  = document.getElementById("difficultyLabelEdit");
+
+            if (diffSlider && diffLabel) {
+                // Set initial label (bound value)
+                updateDiffLabel(diffSlider.value);
+
+                // Update as user slides
+                diffSlider.addEventListener("input", function () {
+                    updateDiffLabel(this.value);
+                });
+            }
+
+            function updateDiffLabel(value) {
+                switch (parseInt(value)) {
+                    case 1:
+                        diffLabel.textContent = "Easy";
+                        break;
+                    case 2:
+                        diffLabel.textContent = "Moderate";
+                        break;
+                    case 3:
+                        diffLabel.textContent = "Hard";
+                        break;
+                    default:
+                        diffLabel.textContent = "Moderate";
+                        break;
+                }
+            }
+
+            // ==== Progress Slider Logic (Edit) ====
+            var progSlider = document.getElementById("progressSliderEdit");
+            var progLabel  = document.getElementById("progressLabelEdit");
+            var doneCheck  = document.getElementById("isDoneCheckboxEdit");
+
+            if (progSlider && progLabel) {
+                // Initialize label text
+                updateProgLabel(progSlider.value);
+
+                // Whenever the slider moves:
+                progSlider.addEventListener("input", function () {
+                    updateProgLabel(this.value);
+
+                    // If slider is 100, auto-check completion
+                    if (parseInt(this.value) >= 100 && doneCheck) {
+                        doneCheck.checked = true;
+                    }
+                    // If slider < 100, uncheck completion
+                    if (parseInt(this.value) < 100 && doneCheck) {
+                        doneCheck.checked = false;
+                    }
+                });
+            }
+
+            function updateProgLabel(value) {
+                progLabel.textContent = value + "%";
+            }
+
+            // ==== Completed Checkbox Logic (Edit) ====
+            if (doneCheck && progSlider) {
+                doneCheck.addEventListener("change", function () {
+                    // If user checks “Completed” manually, set slider to 100
+                    if (this.checked) {
+                        progSlider.value = 100;
+                        updateProgLabel(100);
+                    }
+                    // If user unchecks, set slider to 0 (or keep at current if >0?)
+                    else if (parseInt(progSlider.value) >= 100) {
+                        progSlider.value = 0;
+                        updateProgLabel(0);
+                    }
+                });
+            }
+        });
+    </script>
 }

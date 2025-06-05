@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;                // For IActionResult, NotFound()
 using Microsoft.AspNetCore.Mvc.RazorPages;     // Base class for Razor PageModels
 using Microsoft.EntityFrameworkCore;           // For FirstOrDefaultAsync
 using PlannerApp.Models;                       // Namespace for TodoItem
-using TodoApp.Data;                            // Namespace for ApplicationDbContext                       
+using PlannerApp.Data;                            // Namespace for ApplicationDbContext                       
 
 namespace TodoApp.Pages.Todo
 {

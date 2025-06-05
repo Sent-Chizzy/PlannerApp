@@ -1,28 +1,33 @@
-using System.Linq;                       // For Where(...)
-using System.Threading.Tasks;            // For Task and async/await
-using Microsoft.AspNetCore.Mvc;          // For IActionResult, [BindProperty], NotFound(), RedirectToPage, ModelState
+using System.Linq;                        // For AnyAsync, Where
+using System.Threading.Tasks;             // For Task and async/await
+using Microsoft.AspNetCore.Mvc;           // For IActionResult, [BindProperty], NotFound(), RedirectToPage
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;      // For FirstOrDefaultAsync, AnyAsync, DbUpdateConcurrencyException
-using PlannerApp.Models;
-using TodoApp.Data;
+using Microsoft.EntityFrameworkCore;       // For FirstOrDefaultAsync, AnyAsync, DbUpdateConcurrencyException
+using PlannerApp.Data;                     // Your ApplicationDbContext namespace
+using PlannerApp.Models;                   // Your TodoItem & Difficulty enum namespace
 
-
-namespace TodoApp.Pages.Todo
+namespace PlannerApp.Pages.Todo
 {
     public class EditModel : PageModel
     {
         private readonly ApplicationDbContext _context;
 
+        // Constructor: ASP.NET Core will inject ApplicationDbContext
         public EditModel(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Binds form data (Id, Title, IsDone) into this property
+        /// <summary>
+        /// Binds all form fields—including Progress and IsDone—into this property.
+        /// </summary>
         [BindProperty]
         public TodoItem TodoItem { get; set; }
 
-        // Loads the existing item on GET /Todo/Edit?id=123
+        /// <summary>
+        /// OnGetAsync runs on HTTP GET /Todo/Edit?id=123.
+        /// It loads the existing TodoItem from the database by its Id.
+        /// </summary>
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null)
@@ -30,7 +35,7 @@ namespace TodoApp.Pages.Todo
                 return NotFound();
             }
 
-            // Load the item from the database
+            // Fetch the TodoItem by Id
             TodoItem = await _context.TodoItems.FirstOrDefaultAsync(m => m.Id == id);
 
             if (TodoItem == null)
@@ -41,41 +46,62 @@ namespace TodoApp.Pages.Todo
             return Page();
         }
 
-        // Saves changes when the edit form is submitted
+        /// <summary>
+        /// OnPostAsync runs when the form is submitted (POST) from /Todo/Edit?id=123.
+        /// Validates, prevents duplicate titles, clamps progress, and saves changes.
+        /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
-            // 1) Validate required fields
+            // 1) If validation fails (e.g. Title required), redisplay form
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            // 2) Check if any other item (with a different Id) already has this Title
+            // 2) Prevent duplicate titles (case-insensitive) for items other than this one
             bool titleInUse = await _context.TodoItems
-                .Where(t => t.Id != TodoItem.Id)             // exclude current record
+                .Where(t => t.Id != TodoItem.Id)
                 .AnyAsync(t => t.Title.ToLower() == TodoItem.Title.ToLower());
 
             if (titleInUse)
             {
-                // 2a) Add an error to the Title field
                 ModelState.AddModelError(
                     "TodoItem.Title",
                     "Another to-do with this title already exists."
                 );
-                return Page(); // Redisplay form with error
+                return Page();
             }
 
-            // 3) Attach this entity to the context and mark it Modified
+            // 3) If slider moved to 100 or checkbox checked, mark as completed and clamp progress
+            if (TodoItem.Progress >= 100 || TodoItem.IsDone)
+            {
+                TodoItem.Progress = 100;
+                TodoItem.IsDone = true;
+            }
+            else
+            {
+                // If progress < 100 but user checked the box, force progress to 100
+                if (TodoItem.IsDone)
+                {
+                    TodoItem.Progress = 100;
+                }
+                // Otherwise, if user slides below 100, ensure IsDone = false
+                else
+                {
+                    TodoItem.IsDone = false;
+                }
+            }
+
+            // 4) Attach the modified TodoItem to the context and save
             _context.Attach(TodoItem).State = EntityState.Modified;
 
             try
             {
-                // 4) Save changes
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                // If the item no longer exists, return 404; otherwise rethrow
+                // If task was deleted by another process, return 404
                 bool exists = await _context.TodoItems.AnyAsync(e => e.Id == TodoItem.Id);
                 if (!exists)
                 {
@@ -87,7 +113,7 @@ namespace TodoApp.Pages.Todo
                 }
             }
 
-            // 5) Redirect back to the list
+            // 5) Redirect back to the Index (list) page
             return RedirectToPage("Index");
         }
     }

@@ -1,35 +1,103 @@
 ﻿@page
-@model TodoApp.Pages.Todo.CreateModel
+@model PlannerApp.Pages.Todo.CreateModel
 
 @{
     ViewData["Title"] = "Create To-Do Item";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1 class="text-center">@ViewData["Title"]</h1>
 
-<!-- Form method="post" posts back to this same page -->
-<form method="post">
-    <div class="mb-3">
-        <!-- Label for the Title property -->
-        <label asp-for="TodoItem.Title" class="form-label"></label>
-        <!-- Input for the Title property -->
-        <input asp-for="TodoItem.Title" class="form-control" />
-        <!-- Validation message for Title -->
-        <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+<!--
+    Wrap the form in a Bootstrap grid row/column.
+    col-md-6 means max width of 50% on md+ screens;
+    mx-auto centers it horizontally.
+-->
+<div class="row">
+    <div class="col-12 col-md-6 mx-auto">
+        <form method="post">
+            <!-- Title Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.Title" class="form-label"></label>
+                <input asp-for="TodoItem.Title" class="form-control" />
+                <span asp-validation-for="TodoItem.Title" class="text-danger"></span>
+            </div>
+
+            <!-- Description Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.Description" class="form-label"></label>
+                <textarea asp-for="TodoItem.Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="TodoItem.Description" class="text-danger"></span>
+            </div>
+
+            <!-- Due Date Field -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.DueDate" class="form-label"></label>
+                <input asp-for="TodoItem.DueDate" class="form-control" type="date" />
+                <span asp-validation-for="TodoItem.DueDate" class="text-danger"></span>
+            </div>
+
+            <!-- Difficulty Slider with Live Label Next to It -->
+            <div class="mb-3">
+                <label asp-for="TodoItem.DifficultyLevel" class="form-label"></label>
+                <div class="d-flex align-items-center">
+                    <input asp-for="TodoItem.DifficultyLevel"
+                           class="form-range me-3"
+                           type="range"
+                           min="1"
+                           max="3"
+                           step="1"
+                           id="difficultySlider" />
+                    <span id="difficultyLabel" class="fw-bold">
+                        @Model.TodoItem?.DifficultyLevel.ToString() ?? "Moderate"
+                    </span>
+                </div>
+                <span asp-validation-for="TodoItem.DifficultyLevel" class="text-danger"></span>
+            </div>
+
+            <!-- IsDone Checkbox -->
+            <div class="form-check mb-3">
+                <input asp-for="TodoItem.IsDone" class="form-check-input" />
+                <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
+            </div>
+
+            <!-- Submit and Cancel Buttons -->
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-page="Index" class="btn btn-secondary ms-2">Back to List</a>
+        </form>
     </div>
-    <div class="form-check mb-3">
-        <!-- Checkbox for the IsDone property -->
-        <input asp-for="TodoItem.IsDone" class="form-check-input" />
-        <!-- Label for the IsDone checkbox -->
-        <label asp-for="TodoItem.IsDone" class="form-check-label"></label>
-    </div>
-    <!-- Submit button to create the new to-do -->
-    <button type="submit" class="btn btn-primary">Create</button>
-    <!-- Link to go back to the list without creating -->
-    <a asp-page="Index" class="btn btn-secondary ms-2">Back to List</a>
-</form>
+</div>
 
 @section Scripts {
-    <!-- Enables client-side validation scripts -->
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var slider = document.getElementById("difficultySlider");
+            var label  = document.getElementById("difficultyLabel");
+
+            if (slider && label) {
+                updateLabel(slider.value);
+                slider.addEventListener("input", function () {
+                    updateLabel(this.value);
+                });
+            }
+
+            function updateLabel(value) {
+                switch (parseInt(value)) {
+                    case 1:
+                        label.textContent = "Easy";
+                        break;
+                    case 2:
+                        label.textContent = "Moderate";
+                        break;
+                    case 3:
+                        label.textContent = "Hard";
+                        break;
+                    default:
+                        label.textContent = "Moderate";
+                        break;
+                }
+            }
+        });
+    </script>
 }
